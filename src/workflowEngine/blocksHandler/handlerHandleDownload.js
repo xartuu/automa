@@ -111,7 +111,14 @@ async function handleDownload({ data, id: blockId }) {
       });
     }, data.timeout);
 
-    const resolvePromise = (id) => {
+    const resolvePromise = async (id) => {
+      if (!currentFilename)
+        await BrowserAPIService.downloads
+          .search({ id: downloadId ?? id })
+          .then(([download]) => {
+            if (download) currentFilename = download.filename;
+          });
+
       if (data.saveData) {
         this.addDataToColumn(data.dataColumn, currentFilename);
       }
@@ -145,7 +152,7 @@ async function handleDownload({ data, id: blockId }) {
         return;
       }
 
-      if (downloadId !== id || !state) return;
+      if ((downloadId !== null && downloadId !== id) || !state) return;
 
       if (filename) currentFilename = filename.current;
 
